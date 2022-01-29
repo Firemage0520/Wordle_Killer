@@ -1,7 +1,7 @@
 module WordleKiller
 
 using DelimitedFiles
-using PyPlot
+using Random
 using Main.Wordle
 
 const letters = [char for char in 'a':'z']
@@ -48,7 +48,7 @@ function get_letter_probabilites(database)
     return letter_probs
 end
 
-function generate_guess(database)
+function individual_letter_prob_guess(database)
     letter_probs = get_letter_probabilites(database)
     max_prob = 0.0
     guess = ""
@@ -65,13 +65,17 @@ function generate_guess(database)
     return guess
 end
 
-function play_one_game(verbose = true)
-    working_database = vec(readdlm("5LetterWords.txt", '\n', String))
-    target_word = Wordle.choose_word()
+function random_word(database)
+    return rand(database)
+end
+
+function play_one_game(verbose = true; database = vec(readdlm("5LetterWords.txt", '\n', String)), guess_alg = individual_letter_prob_guess)
+    working_database = copy(database)
+    target_word = random_word(working_database)
     round = 1
     guesses = []
     while round < 7
-        guess = generate_guess(working_database)
+        guess = guess_alg(working_database)
         push!(guesses, guess)
         if guess == target_word
             if verbose
@@ -96,4 +100,5 @@ function play_one_game(verbose = true)
     end
     return false, round
 end
+
 end #module
