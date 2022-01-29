@@ -30,7 +30,7 @@ function filter_database!(database, correct_letters, correct_locations, incorrec
     for correct_letter_pair in correct_letters
         indx_to_remove = []
         for (indx, word) in enumerate(database)
-            if word[correct_letter_pair[2]] == correct_letter_pair[1]
+            if !(correct_letter_pair[1] in word) || word[correct_letter_pair[2]] == correct_letter_pair[1]
                 push!(indx_to_remove, indx)
             end
         end
