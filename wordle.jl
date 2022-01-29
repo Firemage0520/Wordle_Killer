@@ -18,29 +18,29 @@ function evaluate_guess(guess, target_word)
         if !(guess_char in target_word)
             push!(incorrect, guess_char)
         elseif target_word[guess_indx] == guess_char
-            push!(correct_location, guess_char)
+            push!(correct_location, [guess_char,guess_indx])
         else
             if count(i->i==guess_char, target_word) > count(i->i==guess_char, vcat(correct_letter,correct_location))
                 if guess_indx == 5
-                    push!(correct_letter, guess_char)
+                    push!(correct_letter, [guess_char,guess_indx])
                 elseif count(i->i==guess_char, target_word) > count(i->i==guess_char, guess[guess_indx+1:5])
-                    push!(correct_letter, guess_char)
+                    push!(correct_letter, [guess_char,guess_indx])
                 end
             end
         end
     end
-    return sort(uppercase.(correct_letter)), sort(uppercase.(correct_location)), sort(uppercase.(incorrect))
+    return correct_letter, correct_location, incorrect
 end
 
 function remove_letters!(letters, correct_letter, correct_location, incorrect)
     for char in correct_letter
-        deleteat!(letters, letters .== char);
+        deleteat!(letters, letters .== char[1]);
     end
     for char in correct_location
-        deleteat!(letters, letters .== char);
+        deleteat!(letters, letters .== char[1]);
     end
     for char in incorrect
-        deleteat!(letters, letters .== char);
+        deleteat!(letters, letters .== char[1]);
     end
     return letters
 end
@@ -64,9 +64,9 @@ function play()
             return true
         else
             correct_letter, correct_location, incorrect = evaluate_guess(guess, target_word)
-            println("\nCorrect Letters (Wrong Location): ", correct_letter...)
-            println("Correct Letters (Right Location): ", correct_location...)
-            println("Incorrect Letters: ", incorrect...)
+            println("\nCorrect Letters (Wrong Location): ", sort(uppercase.([pair[1] for pair in correct_letter]))...)
+            println("Correct Letters (Right Location): ", sort(uppercase.([pair[1] for pair in correct_location]))...)
+            println("Incorrect Letters: ", sort(uppercase.(incorrect))...)
             remove_letters!(letters, correct_letter, correct_location, incorrect)
             round += 1
         end
