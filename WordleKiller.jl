@@ -69,7 +69,7 @@ function random_word(database)
     return rand(database)
 end
 
-function play_one_game(verbose = true; database = vec(readdlm("5LetterWords.txt", '\n', String)), guess_alg = individual_letter_prob_guess)
+function play_one_game(verbose = true; database = vec(readdlm("5LetterWords.txt", '\n', String)), guess_alg = random_word)
     working_database = copy(database)
     target_word = random_word(working_database)
     round = 1
@@ -99,6 +99,102 @@ function play_one_game(verbose = true; database = vec(readdlm("5LetterWords.txt"
         end
     end
     return false, round
+end
+
+function yesnoprompt()
+    input = ""
+    while input != "y" && input != "n"
+        print("(y/n):")
+        input = readline()
+    end
+    return input
+end
+
+function manual_prompts(database = vec(readdlm("5LetterWords.txt", '\n', String)), guess_alg = random_word)
+    working_database = copy(database)
+    round = 1
+    while round < 7
+        println("Round $round\n")
+        guess = guess_alg(working_database)
+        println("Guess is $guess\n")
+        println("Is guess correct? ")
+        input = yesnoprompt()
+        if input == "y"
+            println("Yay we won!")
+            return true
+        end
+        incorrect = []
+        correct_letters = []
+        correct_locations = []
+        keep_going = true
+        while keep_going
+            println("Which letters are incorrect?\n")
+            input_letters = readline()
+            if input_letters != ""
+                incorrect = only.(split(input_letters,""))
+            else
+                incorrect = []
+            end
+            println("Incorrect letters are:", incorrect...)
+            println("Is this right? ")
+            input = yesnoprompt()
+            if input == "y"
+                keep_going = false
+            end
+        end
+        keep_going = true
+        while keep_going
+            println("Which letters are correct, but in the wrong place?\n")
+            input_letters = readline()
+            if input_letters != ""
+                lttrs = only.(split(input_letters,""))
+            end
+            println("What locations were they in, respectively?\n")
+            input_nums = readline()
+            if input_nums != ""
+                locs = parse.(Int64, split(input_nums,""))
+            end
+            if input_letters != ""
+                correct_letters = [[char, pos] for (char, pos) in zip(lttrs,locs)]
+            else
+                correct_letters = []
+            end
+            println("Correct letter, wrong location pairs are:", correct_letters...)
+            println("Is this right? ")
+            input = yesnoprompt()
+            if input == "y"
+                keep_going = false
+            end
+        end
+        keep_going = true
+        while keep_going
+            println("Which letters are correct, and in the right place?\n")
+            input_letters = readline()
+            if input_letters != ""
+                lttrs = only.(split(input_letters,""))
+            end
+            println("What locations were they in, respectively?\n")
+            input_nums = readline()
+            if input_nums != ""
+                locs = parse.(Int64, split(input_nums,""))
+            end
+            if input_letters != ""
+                correct_locations = [[char, pos] for (char, pos) in zip(lttrs,locs)]
+            else
+                correct_locations = []
+            end
+            println("Correct letter, right location pairs are:", correct_locations...)
+            println("Is this right? ")
+            input = yesnoprompt()
+            if input == "y"
+                keep_going = false
+            end
+        end
+        filter_database!(working_database, correct_letters, correct_locations, incorrect)
+        round += 1
+    end
+    println("We lost, oh well")
+    return false
 end
 
 end #module
